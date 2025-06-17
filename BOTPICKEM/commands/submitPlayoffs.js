@@ -28,7 +28,17 @@ module.exports = {
         }
 
         const pickData = { quarterfinals, semifinals, final };
-        pickemService.submitPick(userId, 'playoffs', pickData);
+                pickemService.submitPick(userId, 'playoffs', pickData);
+
+        logPick({
+            userId: interaction.user.id,
+            username: interaction.user.username,
+            event: 'playoffs',
+            mode: 'playoffs',
+            picks: pickData
+        });
+
         await interaction.reply({ content: 'Twoje typy na playoffy zostały zapisane!', ephemeral: true });
+
     }
 };
