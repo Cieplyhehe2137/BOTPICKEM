@@ -29,6 +29,13 @@ module.exports = {
 
         const pickData = { upperfinal, lowerfinal, grandfinal };
         pickemService.submitPick(userId, 'doubleelim', pickData);
+        logPick({
+  userId: interaction.user.id,
+  username: interaction.user.username,
+  event: 'doubleelim',
+  mode: 'doubleelim',
+  picks: pickData
+});
         await interaction.reply({ content: 'Twoje typy na Double Elim zostały zapisane!', ephemeral: true });
     }
 };
