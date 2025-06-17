@@ -32,3 +32,26 @@ module.exports = {
         await interaction.reply({ content: 'Twoje typy na Double Elim zostały zapisane!', ephemeral: true });
     }
 };
+
+const fs = require("fs");
+const path = require("path");
+
+function logPick({ userId, username, event, mode, picks }) {
+  const logsPath = path.join(__dirname, "..", "data", "pick_logs.json");
+
+  let logs = [];
+  if (fs.existsSync(logsPath)) {
+    logs = JSON.parse(fs.readFileSync(logsPath, "utf8"));
+  }
+
+  logs.push({
+    user_id: userId,
+    username: username,
+    event: event,
+    mode: mode,
+    timestamp: new Date().toISOString(),
+    picks: picks
+  });
+
+  fs.writeFileSync(logsPath, JSON.stringify(logs, null, 2));
+}
