@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Pick'Em Admin Panel</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 20px; }
+        h1 { color: #00bfff; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #222; }
+        a.button {
+            background: #00bfff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Pick'Em Admin Panel</h1>
+
+    <h2>Ranking</h2>
+    <table>
+        <tr>
+            <th>#</th>
+            <th>UserID</th>
+            <th>Punkty</th>
+        </tr>
+        <% scores.forEach((entry, index) => { %>
+            <tr>
+                <td><%= index + 1 %></td>
+                <td><%= entry.userId %></td>
+                <td><%= entry.total %> pkt</td>
+            </tr>
+        <% }) %>
+    </table>
+
+    <h2>Lista wszystkich picków</h2>
+    <table>
+        <tr>
+            <th>UserID</th>
+            <th>Typy</th>
+        </tr>
+        <% Object.keys(picks).forEach(userId => { %>
+            <tr>
+                <td><%= userId %></td>
+                <td><pre><%= JSON.stringify(picks[userId], null, 2) %></pre></td>
+            </tr>
+        <% }) %>
+    </table>
+
+    <a href="/backup" class="button">📦 Pobierz Backup JSON</a>
+
+</body>
+</html>

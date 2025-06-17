@@ -1,0 +1,16 @@
+{
+  "name": "pickem-bot-pro",
+  "version": "1.0.0",
+  "description": "Pick'Em Discord BOT",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "register": "node registerCommands.js",
+    "backup": "node backup.js",
+    "reminder": "node reminder.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.13.0",
+    "dotenv": "^16.0.3"
+  }
+}
