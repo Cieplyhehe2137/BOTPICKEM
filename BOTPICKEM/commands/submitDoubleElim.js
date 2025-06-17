@@ -62,3 +62,8 @@ function logPick({ userId, username, event, mode, picks }) {
 
   fs.writeFileSync(logsPath, JSON.stringify(logs, null, 2));
 }
+
+if (!fs.existsSync(logsPath)) {
+  fs.writeFileSync(logsPath, JSON.stringify([], null, 2));
+}
+
