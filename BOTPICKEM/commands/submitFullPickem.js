@@ -15,43 +15,51 @@ module.exports = {
       return interaction.reply({ content: 'Deadline minął!', ephemeral: true });
     }
 
-    const selects = [
-      new StringSelectMenuBuilder()
-        .setCustomId('3-0')
-        .setPlaceholder('Wybierz 2 drużyny do 3-0')
-        .setMinValues(2)
-        .setMaxValues(2)
-        .addOptions(teams.map(t => ({ label: t, value: `30-${t}` }))),
-
-      new StringSelectMenuBuilder()
-        .setCustomId('0-3')
-        .setPlaceholder('Wybierz 2 drużyny do 0-3')
-        .setMinValues(2)
-        .setMaxValues(2)
-        .addOptions(teams.map(t => ({ label: t, value: `03-${t}` }))),
-
-      new StringSelectMenuBuilder()
-        .setCustomId('advance')
-        .setPlaceholder('Wybierz 6 drużyn do awansu')
-        .setMinValues(6)
-        .setMaxValues(6)
-        .addOptions(teams.map(t => ({ label: t, value: `adv-${t}` })))
-    ];
-
-    const playoffIds = ['qf1', 'qf2', 'qf3', 'qf4', 'sf1', 'sf2', 'final'];
-    const playoffSelects = playoffIds.map(id => new StringSelectMenuBuilder()
-      .setCustomId(id)
-      .setPlaceholder(`${id.toUpperCase()}: wybierz zwycięzcę`)
-      .addOptions(teams.map(t => ({ label: t, value: t }))));
-
-    const rows = [...selects.map(s => new ActionRowBuilder().addComponents(s)),
-                   ...playoffSelects.map(s => new ActionRowBuilder().addComponents(s))];
-
-    await interaction.reply({ content: 'Typuj Pick'Em:', components: rows, ephemeral: true });
-
     const userId = interaction.user.id;
     const picks = { '3-0': [], '0-3': [], advance: [], qf1: '', qf2: '', qf3: '', qf4: '', sf1: '', sf2: '', final: '' };
     const filled = new Set();
+
+    const createSelectMenus = () => {
+      const taken = new Set([...picks['3-0'], ...picks['0-3'], ...picks.advance]);
+      const options = (prefix = '') => teams
+        .filter(t => !taken.has(t) || prefix === '30-' && picks['3-0'].includes(t) || prefix === '03-' && picks['0-3'].includes(t) || prefix === 'adv-' && picks.advance.includes(t))
+        .map(t => ({ label: t, value: `${prefix}${t}` }));
+
+      const selects = [
+        new StringSelectMenuBuilder()
+          .setCustomId('3-0')
+          .setPlaceholder('Wybierz 2 drużyny do 3-0')
+          .setMinValues(2)
+          .setMaxValues(2)
+          .addOptions(options('30-')),
+
+        new StringSelectMenuBuilder()
+          .setCustomId('0-3')
+          .setPlaceholder('Wybierz 2 drużyny do 0-3')
+          .setMinValues(2)
+          .setMaxValues(2)
+          .addOptions(options('03-')),
+
+        new StringSelectMenuBuilder()
+          .setCustomId('advance')
+          .setPlaceholder('Wybierz 6 drużyn do awansu')
+          .setMinValues(6)
+          .setMaxValues(6)
+          .addOptions(options('adv-'))
+      ];
+
+      const playoffIds = ['qf1', 'qf2', 'qf3', 'qf4', 'sf1', 'sf2', 'final'];
+      const playoffSelects = playoffIds.map(id => new StringSelectMenuBuilder()
+        .setCustomId(id)
+        .setPlaceholder(`${id.toUpperCase()}: wybierz zwycięzcę`)
+        .addOptions(teams.map(t => ({ label: t, value: t }))));
+
+      return [...selects.map(s => new ActionRowBuilder().addComponents(s)),
+              ...playoffSelects.map(s => new ActionRowBuilder().addComponents(s))];
+    };
+
+    let rows = createSelectMenus();
+    await interaction.reply({ content: 'Typuj Pick'Em:', components: rows, ephemeral: true });
 
     const collector = interaction.channel.createMessageComponentCollector({ componentType: ComponentType.StringSelect, time: 60000 });
 
@@ -70,15 +78,17 @@ module.exports = {
       }
 
       filled.add(id);
-      await i.reply({ content: `Zapisano: ${id.toUpperCase()}`, ephemeral: true });
-
       const required = ['3-0', '0-3', 'advance', 'qf1', 'qf2', 'qf3', 'qf4', 'sf1', 'sf2', 'final'];
       const allSet = required.every(k => (['3-0','0-3','advance'].includes(k) ? picks[k].length : picks[k]) );
 
       if (allSet) {
         pickemService.savePickFullPlusPlayoffs(userId, picks);
         collector.stop();
+        return i.reply({ content: '✅ Zapisano wszystkie typy!', ephemeral: true });
       }
+
+      rows = createSelectMenus();
+      await i.update({ content: 'Zaktualizowano menu po wyborze:', components: rows });
     });
   }
 };
