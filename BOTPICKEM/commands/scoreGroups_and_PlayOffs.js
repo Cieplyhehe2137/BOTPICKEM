@@ -1,41 +1,51 @@
-// ✅ score_groups_and_playoffs.js – scoring dla 6 awansów + 2 ćw., 2 pół., finał
 const { SlashCommandBuilder } = require('discord.js');
-const pickemService = require('../services/pickemServices');
+const path = require('path');
+const fs = require('fs');
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('score_groups_and_playoffs')
-    .setDescription('Zlicz punkty za typy grup + playoffy (2 ćw., 2 pół., 1 finał)'),
+    data: new SlashCommandBuilder()
+        .setName('score_groups_and_playoffs')
+        .setDescription('Policz punkty za fazę grupową i playoffy'),
 
-  async execute(interaction) {
-    const actual = {
-      advance: ['Navi', 'G2', 'Vitality', 'Spirit', 'VP', 'Furia'],
-      qf1: 'Navi',
-      qf2: 'VP',
-      sf1: 'Navi',
-      sf2: 'Spirit',
-      final: 'Navi'
-    };
+    async execute(interaction) {
+        const picksPath = path.join(__dirname, '../data/picks.json');
+        const resultsPath = path.join(__dirname, '../data/results.json');
 
-    const allPicks = pickemService.getAllPicks();
-    const results = [];
+        if (!fs.existsSync(picksPath) || !fs.existsSync(resultsPath)) {
+            return interaction.reply({ content: 'Brakuje plików z typami lub wynikami.', ephemeral: true });
+        }
 
-    for (const [userId, picks] of Object.entries(allPicks)) {
-      let score = 0;
+        const picks = JSON.parse(fs.readFileSync(picksPath));
+        const results = JSON.parse(fs.readFileSync(resultsPath));
 
-      for (const team of picks.advance || []) {
-        if (actual.advance.includes(team)) score += 2;
-      }
+        const userScores = {};
 
-      ['qf1', 'qf2', 'sf1', 'sf2', 'final'].forEach(key => {
-        if (picks[key] === actual[key]) score += 1;
-      });
+        for (const userId in picks) {
+            const userPick = picks[userId];
+            let score = 0;
 
-      results.push({ user: `<@${userId}>`, score });
+            if (Array.isArray(results.group) && Array.isArray(userPick.group)) {
+                for (const team of userPick.group) {
+                    if (results.group.includes(team)) {
+                        score += 1;
+                    }
+                }
+            }
+
+            if (Array.isArray(results.playoff) && Array.isArray(userPick.playoff)) {
+                for (const team of userPick.playoff) {
+                    if (results.playoff.includes(team)) {
+                        score += 2;
+                    }
+                }
+            }
+
+            userScores[userId] = score;
+        }
+
+        const scoresPath = path.join(__dirname, '../data/group_and_playoff_scores.json');
+        fs.writeFileSync(scoresPath, JSON.stringify(userScores, null, 2));
+
+        await interaction.reply({ content: '✅ Punkty za grupy i playoffy zostały policzone!', ephemeral: true });
     }
-
-    results.sort((a, b) => b.score - a.score);
-    const table = results.map((r, i) => `${i + 1}. ${r.user} – **${r.score} pkt**`).join('\n');
-    await interaction.reply({ content: `📊 **Wyniki grup + playoffów:**\n\n${table}`, ephemeral: false });
-  }
 };
