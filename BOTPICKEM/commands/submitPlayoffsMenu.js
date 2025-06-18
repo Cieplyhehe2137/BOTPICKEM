@@ -2,7 +2,7 @@
 const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType } = require('discord.js');
 const pickemService = require('../services/pickemServices');
 const deadlineService = require('../services/deadlineService');
-const teams = require('../teams.json');
+const teams = require('../data/teams.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
