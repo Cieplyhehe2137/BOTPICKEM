@@ -1,7 +1,7 @@
 // commands/submitDoubleElim.js
 
 const { SlashCommandBuilder } = require('discord.js');
-const pickemService = require('../services/pickemService');
+const pickemService = require('../services/pickemServices');
 const deadlineService = require('../services/deadlineService');
 
 module.exports = {
