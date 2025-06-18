@@ -1,44 +1,79 @@
-// ✅ scoreFullPlusPlayoffs.js – scoring 3-0, 0-3, awanse + playoffy
 const { SlashCommandBuilder } = require('discord.js');
+const fs = require('fs');
+const path = require('path');
 const pickemService = require('../services/pickemServices');
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('scorefullplusplayoffs')
-    .setDescription('Zlicz punkty za 3-0, 0-3, awanse + playoffy'),
+    data: new SlashCommandBuilder()
+        .setName('score_fullpickem')
+        .setDescription('Policz punkty za pełny Pick\'Em'),
 
-  async execute(interaction) {
-    const actual = {
-      '3-0': ['Spirit', 'G2'],
-      '0-3': ['HOTU', 'Monte'],
-      advance: ['Navi', 'G2', 'Spirit', 'Vitality', 'VP', 'Furia'],
-      qf1: 'Navi', qf2: 'VP', qf3: 'G2', qf4: 'Spirit',
-      sf1: 'Navi', sf2: 'Spirit',
-      final: 'Navi'
-    };
+    async execute(interaction) {
+        const picksPath = path.join(__dirname, '../data/picks.json');
+        const resultsPath = path.join(__dirname, '../data/results.json');
 
-    const allPicks = pickemService.getAllPicks();
-    const results = [];
+        if (!fs.existsSync(picksPath) || !fs.existsSync(resultsPath)) {
+            return interaction.reply({ content: 'Brakuje plików z typami lub wynikami.', ephemeral: true });
+        }
 
-    for (const [userId, picks] of Object.entries(allPicks)) {
-      const p = picks.full_plus_playoffs;
-      if (!p) continue;
-      let score = 0;
+        const picks = JSON.parse(fs.readFileSync(picksPath));
+        const results = JSON.parse(fs.readFileSync(resultsPath));
 
-      p['3-0']?.forEach(team => { if (actual['3-0'].includes(team)) score += 4; });
-      p['0-3']?.forEach(team => { if (actual['0-3'].includes(team)) score += 4; });
-      p.advance?.forEach(team => { if (actual.advance.includes(team)) score += 2; });
+        const userScores = {};
 
-      ['qf1', 'qf2', 'qf3', 'qf4', 'sf1', 'sf2', 'final'].forEach(k => {
-        if (p[k] === actual[k]) score += 1;
-      });
+        for (const userId in picks) {
+            const userPick = picks[userId];
+            let score = 0;
 
-      results.push({ user: `<@${userId}>`, score });
+            // 3-0
+            if (results['3-0'] && userPick['3-0'] && results['3-0'].includes(userPick['3-0'])) {
+                score += 4;
+            }
+
+            // 0-3
+            if (results['0-3'] && userPick['0-3'] && results['0-3'].includes(userPick['0-3'])) {
+                score += 4;
+            }
+
+            // Awansujące
+            if (Array.isArray(results['advancing']) && Array.isArray(userPick['advancing'])) {
+                for (const team of userPick['advancing']) {
+                    if (results['advancing'].includes(team)) {
+                        score += 2;
+                    }
+                }
+            }
+
+            // Półfinały
+            if (Array.isArray(results['semifinal']) && Array.isArray(userPick['semifinal'])) {
+                for (const team of userPick['semifinal']) {
+                    if (results['semifinal'].includes(team)) {
+                        score += 2;
+                    }
+                }
+            }
+
+            // Finał
+            if (Array.isArray(results['final']) && Array.isArray(userPick['final'])) {
+                for (const team of userPick['final']) {
+                    if (results['final'].includes(team)) {
+                        score += 3;
+                    }
+                }
+            }
+
+            // Zwycięzca
+            if (results['winner'] && userPick['winner'] && results['winner'] === userPick['winner']) {
+                score += 5;
+            }
+
+            userScores[userId] = score;
+        }
+
+        // Zapisz wyniki
+        const scoresPath = path.join(__dirname, '../data/fullpickem_scores.json');
+        fs.writeFileSync(scoresPath, JSON.stringify(userScores, null, 2));
+
+        await interaction.reply({ content: '✅ Punkty za Full Pick\'Em zostały obliczone i zapisane!', ephemeral: true });
     }
-
-    results.sort((a, b) => b.score - a.score);
-    const table = results.map((r, i) => `${i + 1}. ${r.user} – **${r.score} pkt**`).join('\n');
-
-    await interaction.reply({ content: `📊 **Wyniki Full + Playoffs:**\n\n${table}`, ephemeral: false });
-  }
 };
