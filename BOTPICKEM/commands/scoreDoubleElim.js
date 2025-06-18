@@ -8,7 +8,7 @@ const resultsPath = path.join(__dirname, '..', 'data', 'results_doubleelim.json'
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('score_doubleelim')
-        .setDescription('Policz punkty za typowanie drabinki double elimination'),
+        .setDescription('Policz punkty za pełne typowanie drabinki Double Elimination (bez Grand Final)'),
 
     async execute(interaction) {
         if (!fs.existsSync(picksPath) || !fs.existsSync(resultsPath)) {
@@ -18,7 +18,7 @@ module.exports = {
         const picksData = JSON.parse(fs.readFileSync(picksPath));
         const results = JSON.parse(fs.readFileSync(resultsPath));
 
-        const eventName = 'double_elim';
+        const eventName = 'double_elim_full';
         const picks = picksData[eventName];
 
         if (!picks) {
@@ -31,15 +31,35 @@ module.exports = {
             const pick = picks[userId];
             let score = 0;
 
-            for (const team of pick.upperfinal) {
-                if (results.upperfinal.includes(team)) score += 3;
+            // Zwycięzcy ćwierćfinałów
+            for (const team of pick.qf_winners) {
+                if (results.qf_winners.includes(team)) score += 2;
             }
 
-            for (const team of pick.lowerfinal) {
-                if (results.lowerfinal.includes(team)) score += 3;
+            // Zwycięzcy półfinałów (UB)
+            for (const team of pick.sf_winners) {
+                if (results.sf_winners.includes(team)) score += 2;
             }
 
-            if (pick.grandfinal === results.grandfinal) score += 5;
+            // Zwycięzca Upper Final
+            if (pick.upperfinal_winner === results.upperfinal_winner) {
+                score += 3;
+            }
+
+            // Zwycięzcy Lower Round 1
+            for (const team of pick.lower_r1_winners) {
+                if (results.lower_r1_winners.includes(team)) score += 2;
+            }
+
+            // Zwycięzcy Lower Round 2
+            for (const team of pick.lower_r2_winners) {
+                if (results.lower_r2_winners.includes(team)) score += 2;
+            }
+
+            // Zwycięzca Lower Final
+            if (pick.lowerfinal_winner === results.lowerfinal_winner) {
+                score += 3;
+            }
 
             scoreboard.push({ userId, score });
         }
@@ -50,6 +70,6 @@ module.exports = {
             `**${index + 1}.** <@${entry.userId}> — **${entry.score} pkt**`
         ).join('\n');
 
-        return interaction.reply({ content: `📊 **Wyniki Double Elim**\n\n${resultText}`, ephemeral: false });
+        return interaction.reply({ content: `📊 **Wyniki Double Elim (Full)**\n\n${resultText}`, ephemeral: false });
     }
 };
