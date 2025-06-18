@@ -1,4 +1,4 @@
-// ✅ submit_full_plus_playoffs.js – 3-0, 0-3, 6 awansów + 4 ćw., 2 pół., 1 finał
+// submit_full_plus_playoffs.js – 3-0, 0-3, 6 awansów + 4 ćw., 2 pół., 1 finał
 const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType } = require('discord.js');
 const pickemService = require('../services/pickemServices');
 const deadlineService = require('../services/deadlineService');
