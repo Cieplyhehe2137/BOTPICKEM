@@ -1,4 +1,4 @@
-// ✅ submitFullPickem.js z 2x 3-0, 2x 0-3, 6 awansów – z rozwijanym menu
+// ✅ submit_full_plus_playoffs.js – 3-0, 0-3, 6 awansów + 4 ćw., 2 pół., 1 finał
 const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType } = require('discord.js');
 const pickemService = require('../services/pickemService');
 const deadlineService = require('../services/deadlineService');
@@ -6,8 +6,8 @@ const teams = require('../teams.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('submitfullpickem')
-    .setDescription('Typuj 2x 3-0, 2x 0-3 i 6 drużyn do awansu'),
+    .setName('submit_full_plus_playoffs')
+    .setDescription('Typuj 3-0, 0-3, 6 awansów + pełne playoffy (ćw., półf., finał)'),
 
   async execute(interaction) {
     const deadline = deadlineService.loadDeadline();
@@ -15,63 +15,68 @@ module.exports = {
       return interaction.reply({ content: 'Deadline minął!', ephemeral: true });
     }
 
-    const select30 = new StringSelectMenuBuilder()
-      .setCustomId('pick30')
-      .setPlaceholder('Wybierz 2 drużyny 3-0')
-      .setMinValues(2)
-      .setMaxValues(2)
-      .addOptions(teams.map(t => ({ label: t, value: 'pick30-' + t })));
+    const selects = [
+      new StringSelectMenuBuilder()
+        .setCustomId('3-0')
+        .setPlaceholder('Wybierz 2 drużyny do 3-0')
+        .setMinValues(2)
+        .setMaxValues(2)
+        .addOptions(teams.map(t => ({ label: t, value: `30-${t}` }))),
 
-    const select03 = new StringSelectMenuBuilder()
-      .setCustomId('pick03')
-      .setPlaceholder('Wybierz 2 drużyny 0-3')
-      .setMinValues(2)
-      .setMaxValues(2)
-      .addOptions(teams.map(t => ({ label: t, value: 'pick03-' + t })));
+      new StringSelectMenuBuilder()
+        .setCustomId('0-3')
+        .setPlaceholder('Wybierz 2 drużyny do 0-3')
+        .setMinValues(2)
+        .setMaxValues(2)
+        .addOptions(teams.map(t => ({ label: t, value: `03-${t}` }))),
 
-    const selectAdv = new StringSelectMenuBuilder()
-      .setCustomId('adv')
-      .setPlaceholder('Wybierz 6 drużyn do awansu')
-      .setMinValues(6)
-      .setMaxValues(6)
-      .addOptions(teams.map(t => ({ label: t, value: 'adv-' + t })));
-
-    const rows = [
-      new ActionRowBuilder().addComponents(select30),
-      new ActionRowBuilder().addComponents(select03),
-      new ActionRowBuilder().addComponents(selectAdv)
+      new StringSelectMenuBuilder()
+        .setCustomId('advance')
+        .setPlaceholder('Wybierz 6 drużyn do awansu')
+        .setMinValues(6)
+        .setMaxValues(6)
+        .addOptions(teams.map(t => ({ label: t, value: `adv-${t}` })))
     ];
 
-    await interaction.reply({ content: 'Wybierz swoje typy:', components: rows, ephemeral: true });
+    const playoffIds = ['qf1', 'qf2', 'qf3', 'qf4', 'sf1', 'sf2', 'final'];
+    const playoffSelects = playoffIds.map(id => new StringSelectMenuBuilder()
+      .setCustomId(id)
+      .setPlaceholder(`${id.toUpperCase()}: wybierz zwycięzcę`)
+      .addOptions(teams.map(t => ({ label: t, value: t }))));
 
-    const picks = { "3-0": [], "0-3": [], advance: [] };
+    const rows = [...selects.map(s => new ActionRowBuilder().addComponents(s)),
+                   ...playoffSelects.map(s => new ActionRowBuilder().addComponents(s))];
+
+    await interaction.reply({ content: 'Typuj Pick'Em:', components: rows, ephemeral: true });
+
     const userId = interaction.user.id;
+    const picks = { '3-0': [], '0-3': [], advance: [], qf1: '', qf2: '', qf3: '', qf4: '', sf1: '', sf2: '', final: '' };
+    const filled = new Set();
 
-    const collector = interaction.channel.createMessageComponentCollector({
-      componentType: ComponentType.StringSelect,
-      time: 60000
-    });
+    const collector = interaction.channel.createMessageComponentCollector({ componentType: ComponentType.StringSelect, time: 60000 });
 
     collector.on('collect', async i => {
       if (i.user.id !== userId) return i.reply({ content: 'To nie Twoje typy!', ephemeral: true });
 
-      if (i.customId === 'pick30') {
-        picks["3-0"] = i.values.map(v => v.replace('pick30-', ''));
-        await i.reply({ content: `Zapisano 3-0: ${picks["3-0"].join(', ')}`, ephemeral: true });
-      }
-
-      if (i.customId === 'pick03') {
-        picks["0-3"] = i.values.map(v => v.replace('pick03-', ''));
-        await i.reply({ content: `Zapisano 0-3: ${picks["0-3"].join(', ')}`, ephemeral: true });
-      }
-
-      if (i.customId === 'adv') {
+      const id = i.customId;
+      if (id === '3-0') {
+        picks['3-0'] = i.values.map(v => v.replace('30-', ''));
+      } else if (id === '0-3') {
+        picks['0-3'] = i.values.map(v => v.replace('03-', ''));
+      } else if (id === 'advance') {
         picks.advance = i.values.map(v => v.replace('adv-', ''));
-        await i.reply({ content: `Zapisano awanse: ${picks.advance.join(', ')}`, ephemeral: true });
+      } else {
+        picks[id] = i.values[0];
       }
 
-      if (picks["3-0"].length === 2 && picks["0-3"].length === 2 && picks.advance.length === 6) {
-        pickemService.savePickFull(userId, picks);
+      filled.add(id);
+      await i.reply({ content: `Zapisano: ${id.toUpperCase()}`, ephemeral: true });
+
+      const required = ['3-0', '0-3', 'advance', 'qf1', 'qf2', 'qf3', 'qf4', 'sf1', 'sf2', 'final'];
+      const allSet = required.every(k => (['3-0','0-3','advance'].includes(k) ? picks[k].length : picks[k]) );
+
+      if (allSet) {
+        pickemService.savePickFullPlusPlayoffs(userId, picks);
         collector.stop();
       }
     });
