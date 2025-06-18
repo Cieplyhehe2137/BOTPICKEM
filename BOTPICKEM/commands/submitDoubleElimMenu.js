@@ -1,6 +1,6 @@
 // 🟡 submitDoubleElimMenu.js
 const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType } = require('discord.js');
-const pickemService = require('../services/pickemService');
+const pickemService = require('../services/pickemServices');
 const deadlineService = require('../services/deadlineService');
 const teams = require('../teams.json');
 
