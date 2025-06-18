@@ -1,4 +1,4 @@
-// ✅ submit_groups_and_playoffs.js – rozwijane menu: 6 awansów + playoffy (2 ćw., 2 pół., 1 finał)
+//  submit_groups_and_playoffs.js – rozwijane menu: 6 awansów + playoffy (2 ćw., 2 pół., 1 finał)
 const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType } = require('discord.js');
 const pickemService = require('../services/pickemServices');
 const deadlineService = require('../services/deadlineService');
