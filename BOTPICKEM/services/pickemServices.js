@@ -52,3 +52,26 @@ module.exports = {
     getUserPick,
     deleteUserPick
 };
+
+const fs = require('fs');
+const path = require('path');
+const picksFilePath = path.join(__dirname, '..', 'data', 'picks.json');
+
+function saveUserPick(eventName, userId, pick) {
+    let data = {};
+
+    if (fs.existsSync(picksFilePath)) {
+        data = JSON.parse(fs.readFileSync(picksFilePath));
+    }
+
+    if (!data[eventName]) {
+        data[eventName] = {};
+    }
+
+    data[eventName][userId] = pick;
+    fs.writeFileSync(picksFilePath, JSON.stringify(data, null, 2));
+}
+
+module.exports = {
+    saveUserPick
+};
