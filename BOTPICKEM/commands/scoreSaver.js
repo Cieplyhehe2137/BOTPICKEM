@@ -1,25 +1,36 @@
-// ✅ scoreSaver.js – trwałe zapisywanie punktów i rankingu
+// commands/scoreSaver.js
+
+const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
-const SCORES_PATH = path.join(__dirname, '../scores.json');
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('save_scores')
+    .setDescription('Zapisz aktualne wyniki do pliku backup.'),
 
-function loadScores() {
-  try {
-    return JSON.parse(fs.readFileSync(SCORES_PATH));
-  } catch (e) {
-    return {};
-  }
-}
+  async execute(interaction) {
+    const picksPath = path.join(__dirname, '..', 'picks.json');
+    const backupPath = path.join(__dirname, '..', 'backups', `picks_backup_${Date.now()}.json`);
 
-function saveScore(userId, score) {
-  const scores = loadScores();
-  scores[userId] = score;
-  fs.writeFileSync(SCORES_PATH, JSON.stringify(scores, null, 2));
-}
+    try {
+      if (!fs.existsSync(picksPath)) {
+        return await interaction.reply({ content: 'Brak pliku picks.json do zapisania.', ephemeral: true });
+      }
 
-function getAllScores() {
-  return loadScores();
-}
+      if (!fs.existsSync(path.dirname(backupPath))) {
+        fs.mkdirSync(path.dirname(backupPath), { recursive: true });
+      }
 
-module.exports = { saveScore, getAllScores };
+      fs.copyFileSync(picksPath, backupPath);
+
+      await interaction.reply({
+        content: `✅ Wyniki zostały zapisane do backupu: \`${path.basename(backupPath)}\``,
+        ephemeral: true,
+      });
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({ content: '❌ Wystąpił błąd podczas zapisu wyników.', ephemeral: true });
+    }
+  },
+};
