@@ -73,5 +73,9 @@ function saveUserPick(eventName, userId, pick) {
 }
 
 module.exports = {
+    submitPick,
+    getAllPicks,
+    getUserPick,
+    deleteUserPick,
     saveUserPick
 };
