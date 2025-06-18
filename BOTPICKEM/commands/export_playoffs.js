@@ -7,7 +7,7 @@ const pickemService = require('../services/pickemServices');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('export_playoffs')
-        .setDescription('Eksportuj dane z typowania Single Elimination z punktami'),
+        .setDescription('Eksportuj dane z typowania Single Elimination z punktami i wyślij plik'),
 
     async execute(interaction) {
         const actual = {
@@ -47,6 +47,10 @@ module.exports = {
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Playoffs');
         XLSX.writeFile(workbook, exportPath);
 
-        await interaction.reply({ content: '📤 Dane zapisane do `exports/playoffs_export.xlsx`!', ephemeral: true });
+        await interaction.reply({
+            content: '📤 Eksport zakończony! Plik zapisany jako `exports/playoffs_export.xlsx`',
+            files: [exportPath],
+            ephemeral: false
+        });
     }
 };
