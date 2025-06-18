@@ -1,9 +1,8 @@
-
-const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const XLSX = require('xlsx');
-const pickemService = require('../services/pickemServices');
+const { SlashCommandBuilder } = require('discord.js');
+const xlsx = require('xlsx');
+
 
 module.exports = {
     data: new SlashCommandBuilder()
