@@ -1,3 +1,6 @@
+// DO POBIERANIA NADCHODZĄCYCH MECZÓW - RACZEJ DO USUNIĘCIA - ZBYT DUŻE RYZYKO
+
+
 const { HLTV } = require('hltv');
 
 // Pobierz nadchodzące mecze (np. dziś/jutro)
@@ -37,3 +40,5 @@ module.exports = {
     getUpcomingMatches,
     getMatchResult
 };
+
+
