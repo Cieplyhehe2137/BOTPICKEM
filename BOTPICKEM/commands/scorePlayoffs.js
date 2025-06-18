@@ -1,11 +1,11 @@
-// ✅ scorePlayoffs.js – nowy scoring: 4 ćwierćfinały, 2 półfinały, 1 finał
 const { SlashCommandBuilder } = require('discord.js');
-const pickemService = require('../services/pickemService');
+const fs = require('fs'); // ✅ tylko raz
+
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('scoreplayoffs')
-    .setDescription('Zlicz punkty za typowanie playoffów (qf1–qf4, sf1–sf2, final)'),
+    .setDescription('Zlicz punkty za typowanie playoffów'),
 
   async execute(interaction) {
     const actual = {
