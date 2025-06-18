@@ -59,7 +59,7 @@ module.exports = {
         }
 
         if (winner.length !== 1) {
-            return interactino.reply({ content: 'Podaj zwycięzcę całego turnieju!', ephemeral: true });
+            return interaction.reply({ content: 'Podaj zwycięzcę całego turnieju!', ephemeral: true });
         
         const pick = {
             userId,
