@@ -1,81 +1,50 @@
-const fs = require("fs");
-const path = require("path");
-
-const PICKS_PATH = path.join(__dirname, "..", "data", "picks.json");
-
-// Zapewnia, że plik istnieje
-function ensurePicksFile() {
-    if (!fs.existsSync(PICKS_PATH)) {
-        fs.writeFileSync(PICKS_PATH, JSON.stringify({}, null, 2));
-    }
-}
-
-// Zapisuje typy użytkownika dla danego wydarzenia
-function submitPick(userId, eventId, pickData) {
-    ensurePicksFile();
-
-    const picks = JSON.parse(fs.readFileSync(PICKS_PATH, "utf8"));
-
-    if (!picks[eventId]) {
-        picks[eventId] = {};
-    }
-
-    picks[eventId][userId] = pickData;
-
-    fs.writeFileSync(PICKS_PATH, JSON.stringify(picks, null, 2));
-}
-
-// Pobiera wszystkie typy
-function getAllPicks() {
-    ensurePicksFile();
-    return JSON.parse(fs.readFileSync(PICKS_PATH, "utf8"));
-}
-
-// Pobiera typy konkretnego użytkownika
-function getUserPick(userId, eventId) {
-    const picks = getAllPicks();
-    return picks[eventId]?.[userId] || null;
-}
-
-// Usuwa typ użytkownika dla danego eventu
-function deleteUserPick(userId, eventId) {
-    const picks = getAllPicks();
-    if (picks[eventId] && picks[eventId][userId]) {
-        delete picks[eventId][userId];
-        fs.writeFileSync(PICKS_PATH, JSON.stringify(picks, null, 2));
-    }
-}
-
-module.exports = {
-    submitPick,
-    getAllPicks,
-    getUserPick,
-    deleteUserPick
-};
-
 const fs = require('fs');
 const path = require('path');
-const picksFilePath = path.join(__dirname, '..', 'data', 'picks.json');
 
-function saveUserPick(eventName, userId, pick) {
-    let data = {};
+const DATA_DIR = path.join(__dirname, '../data');
+const PICKS_FILE = path.join(DATA_DIR, 'picks.json');
 
-    if (fs.existsSync(picksFilePath)) {
-        data = JSON.parse(fs.readFileSync(picksFilePath));
+function ensureDataDirectoryExists() {
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR);
+    }
+}
+
+function loadPicks() {
+    ensureDataDirectoryExists();
+
+    if (!fs.existsSync(PICKS_FILE)) {
+        fs.writeFileSync(PICKS_FILE, JSON.stringify({}));
     }
 
-    if (!data[eventName]) {
-        data[eventName] = {};
+    const rawData = fs.readFileSync(PICKS_FILE);
+    return JSON.parse(rawData);
+}
+
+function savePicks(picks) {
+    ensureDataDirectoryExists();
+    fs.writeFileSync(PICKS_FILE, JSON.stringify(picks, null, 2));
+}
+
+function saveUserPick(userId, pickData, category) {
+    const picks = loadPicks();
+
+    if (!picks[userId]) {
+        picks[userId] = {};
     }
 
-    data[eventName][userId] = pick;
-    fs.writeFileSync(picksFilePath, JSON.stringify(data, null, 2));
+    picks[userId][category] = pickData;
+    savePicks(picks);
+}
+
+function getUserPick(userId, category) {
+    const picks = loadPicks();
+    return picks[userId]?.[category] || null;
 }
 
 module.exports = {
-    submitPick,
-    getAllPicks,
+    saveUserPick,
     getUserPick,
-    deleteUserPick,
-    saveUserPick
+    loadPicks,
+    savePicks
 };
