@@ -1,58 +1,36 @@
+// ✅ scorePlayoffs.js – nowy scoring: 4 ćwierćfinały, 2 półfinały, 1 finał
 const { SlashCommandBuilder } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
-
-const picksPath = path.join(__dirname, '..', 'data', 'picks.json');
-const resultsPath = path.join(__dirname, '..', 'data', 'results_playoffs.json');
+const pickemService = require('../services/pickemService');
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('score_playoffs')
-        .setDescription('Policz punkty za typowanie playoffów (single elimination)'),
+  data: new SlashCommandBuilder()
+    .setName('scoreplayoffs')
+    .setDescription('Zlicz punkty za typowanie playoffów (qf1–qf4, sf1–sf2, final)'),
 
-    async execute(interaction) {
-        if (!fs.existsSync(picksPath) || !fs.existsSync(resultsPath)) {
-            return interaction.reply({ content: 'Brakuje pliku z typami lub wynikami!', ephemeral: true });
-        }
+  async execute(interaction) {
+    const actual = {
+      qf1: 'Navi',
+      qf2: 'Spirit',
+      qf3: 'FaZe',
+      qf4: 'VP',
+      sf1: 'Navi',
+      sf2: 'FaZe',
+      final: 'Navi'
+    };
 
-        const picksData = JSON.parse(fs.readFileSync(picksPath));
-        const results = JSON.parse(fs.readFileSync(resultsPath));
+    const allPicks = pickemService.getAllPicks();
+    const results = [];
 
-        const eventName = 'playoffs';
-        const picks = picksData[eventName];
-
-        if (!picks) {
-            return interaction.reply({ content: 'Brak typów dla tego wydarzenia!', ephemeral: true });
-        }
-
-        const scoreboard = [];
-
-        for (const userId in picks) {
-            const pick = picks[userId];
-            let score = 0;
-
-            // Półfinaliści
-            for (const team of pick.semifinalists) {
-                if (results.semifinalists.includes(team)) score += 3;
-            }
-
-            // Finaliści
-            for (const team of pick.finalists) {
-                if (results.finalists.includes(team)) score += 3;
-            }
-
-            // Zwycięzca
-            if (pick.winner === results.winner) score += 5;
-
-            scoreboard.push({ userId, score });
-        }
-
-        scoreboard.sort((a, b) => b.score - a.score);
-
-        const resultText = scoreboard.map((entry, index) =>
-            `**${index + 1}.** <@${entry.userId}> — **${entry.score} pkt**`
-        ).join('\n');
-
-        return interaction.reply({ content: `📊 **Wyniki Playoffów (Single Elim)**\n\n${resultText}`, ephemeral: false });
+    for (const [userId, picks] of Object.entries(allPicks)) {
+      let score = 0;
+      for (const round of Object.keys(actual)) {
+        if (picks[round] === actual[round]) score += 1;
+      }
+      results.push({ user: `<@${userId}>`, score });
     }
+
+    results.sort((a, b) => b.score - a.score);
+    const table = results.map((r, i) => `${i + 1}. ${r.user} – **${r.score} pkt**`).join('\n');
+    await interaction.reply({ content: `🏆 **Wyniki playoffów:**\n\n${table}`, ephemeral: false });
+  }
 };
