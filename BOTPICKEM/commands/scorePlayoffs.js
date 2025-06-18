@@ -1,6 +1,6 @@
 // ✅ scorePlayoffs.js – nowy scoring: 4 ćwierćfinały, 2 półfinały, 1 finał
 const { SlashCommandBuilder } = require('discord.js');
-const pickemService = require('../services/pickemServices');
+const pickemService = require('../services/pickemService');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -30,7 +30,8 @@ module.exports = {
     }
 
     results.sort((a, b) => b.score - a.score);
-    const table = results.map((r, i) => `${i + 1}. ${r.user} – **${r.score} pkt**`).join('\n');
-    await interaction.reply({ content: `🏆 **Wyniki playoffów:**\n\n${table}`, ephemeral: false });
+    const table = results.map((r, i) => `${i + 1}. ${r.user} – **${r.score}** pkt`).join('\n');
+
+    await interaction.reply({ content: `🏆 Wyniki playoffów:\n\n${table}`, ephemeral: false });
   }
 };
