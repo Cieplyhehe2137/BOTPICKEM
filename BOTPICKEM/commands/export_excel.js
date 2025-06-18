@@ -1,3 +1,4 @@
+
 const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
@@ -13,7 +14,7 @@ module.exports = {
         const exportPath = path.join(__dirname, '..', 'exports', 'picks_export.xlsx');
 
         if (!fs.existsSync(picksPath)) {
-            return interaction.reply({ content: 'Brak danych do eksportu!', ephemeral: true });
+            return interaction.reply({ content: 'Brak danych do eksportu!', files: [exportPath], files: [exportPath], ephemeral: false });
         }
 
         const picks = JSON.parse(fs.readFileSync(picksPath, 'utf8'));
@@ -36,6 +37,12 @@ module.exports = {
 
         XLSX.writeFile(workbook, exportPath);
 
-        await interaction.reply({ content: '✅ Eksportowano dane do `exports/picks_export.xlsx`!', ephemeral: true });
+        
+        await interaction.reply({
+            content: '📤 Eksport zakończony! Plik zapisany jako `' + exportPath + '`',
+            files: [exportPath],
+            ephemeral: false
+        });
+
     }
 };
