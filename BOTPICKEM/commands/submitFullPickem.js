@@ -58,6 +58,9 @@ module.exports = {
             return interaction.reply({ content: 'Musisz podać **dokładnie 2 drużyny** finałowe!', ephemeral: true });
         }
 
+        if (winner.length !== 1) {
+            return interactino.reply({ content: 'Podaj zwycięzcę całego turnieju!', ephemeral: true });
+        
         const pick = {
             userId,
             threezero,
