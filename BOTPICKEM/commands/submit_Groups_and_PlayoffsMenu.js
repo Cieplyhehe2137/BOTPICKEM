@@ -1,6 +1,6 @@
 // 🟡 submit_groups_and_playoffs_menu.js
 const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType } = require('discord.js');
-const pickemService = require('../services/pickemService');
+const pickemService = require('../services/pickemServices');
 const deadlineService = require('../services/deadlineService');
 const teams = require('../teams.json');
 
