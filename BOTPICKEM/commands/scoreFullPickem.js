@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const fs = require('fs');
 const path = require('path');
-const pickemService = require('../services/pickemServices');
+const fs = require('fs'); // tylko raz!
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -25,17 +24,14 @@ module.exports = {
             const userPick = picks[userId];
             let score = 0;
 
-            // 3-0
             if (results['3-0'] && userPick['3-0'] && results['3-0'].includes(userPick['3-0'])) {
                 score += 4;
             }
 
-            // 0-3
             if (results['0-3'] && userPick['0-3'] && results['0-3'].includes(userPick['0-3'])) {
                 score += 4;
             }
 
-            // Awansujące
             if (Array.isArray(results['advancing']) && Array.isArray(userPick['advancing'])) {
                 for (const team of userPick['advancing']) {
                     if (results['advancing'].includes(team)) {
@@ -44,7 +40,6 @@ module.exports = {
                 }
             }
 
-            // Półfinały
             if (Array.isArray(results['semifinal']) && Array.isArray(userPick['semifinal'])) {
                 for (const team of userPick['semifinal']) {
                     if (results['semifinal'].includes(team)) {
@@ -53,7 +48,6 @@ module.exports = {
                 }
             }
 
-            // Finał
             if (Array.isArray(results['final']) && Array.isArray(userPick['final'])) {
                 for (const team of userPick['final']) {
                     if (results['final'].includes(team)) {
@@ -62,7 +56,6 @@ module.exports = {
                 }
             }
 
-            // Zwycięzca
             if (results['winner'] && userPick['winner'] && results['winner'] === userPick['winner']) {
                 score += 5;
             }
@@ -70,7 +63,6 @@ module.exports = {
             userScores[userId] = score;
         }
 
-        // Zapisz wyniki
         const scoresPath = path.join(__dirname, '../data/fullpickem_scores.json');
         fs.writeFileSync(scoresPath, JSON.stringify(userScores, null, 2));
 
