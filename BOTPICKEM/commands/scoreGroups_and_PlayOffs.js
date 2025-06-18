@@ -1,6 +1,6 @@
 // ✅ score_groups_and_playoffs.js – scoring dla 6 awansów + 2 ćw., 2 pół., finał
 const { SlashCommandBuilder } = require('discord.js');
-const pickemService = require('../services/pickemService');
+const pickemService = require('../services/pickemServices');
 
 module.exports = {
   data: new SlashCommandBuilder()
