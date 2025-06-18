@@ -1,6 +1,6 @@
 // ✅ scoreFullPlusPlayoffs.js – scoring 3-0, 0-3, awanse + playoffy
 const { SlashCommandBuilder } = require('discord.js');
-const pickemService = require('../services/pickemService');
+const pickemService = require('../services/pickemServices');
 
 module.exports = {
   data: new SlashCommandBuilder()
