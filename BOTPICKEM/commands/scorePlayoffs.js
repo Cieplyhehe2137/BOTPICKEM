@@ -1,6 +1,6 @@
 // ✅ scorePlayoffs.js – nowy scoring: 4 ćwierćfinały, 2 półfinały, 1 finał
 const { SlashCommandBuilder } = require('discord.js');
-const pickemService = require('../services/pickemService');
+const pickemService = require('../services/pickemServices');
 
 module.exports = {
   data: new SlashCommandBuilder()
