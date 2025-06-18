@@ -84,7 +84,7 @@ module.exports = {
       if (allSet) {
         pickemService.savePickFullPlusPlayoffs(userId, picks);
         collector.stop();
-        return i.reply({ content: '✅ Zapisano wszystkie typy!', ephemeral: true });
+        return i.reply({ content: 'Zapisano wszystkie typy!', ephemeral: true });
       }
 
       rows = createSelectMenus();
