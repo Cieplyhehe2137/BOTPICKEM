@@ -59,7 +59,7 @@ module.exports = {
     };
 
     let rows = createSelectMenus();
-    await interaction.reply({ content: 'Typuj Pick'Em:', components: rows, ephemeral: true });
+    await interaction.reply({ content: "Typuj Pick'Em:", components: rows, ephemeral: true });
 
     const collector = interaction.channel.createMessageComponentCollector({ componentType: ComponentType.StringSelect, time: 60000 });
 
