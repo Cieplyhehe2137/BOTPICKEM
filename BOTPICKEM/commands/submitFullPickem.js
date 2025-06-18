@@ -5,7 +5,7 @@ const pickemService = require('../services/pickemService');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('submit_fullpickem')
-        .setDescription('Prześlij pełne typowanie 3-0, 0-3, awansy i playoffy')
+        .setDescription('Prześlij pełne typowanie 3-0, 0-3, oraz 6 drużyn awansujących')
         .addStringOption(option =>
             option.setName('threezero')
                 .setDescription('Drużyna 3-0')
