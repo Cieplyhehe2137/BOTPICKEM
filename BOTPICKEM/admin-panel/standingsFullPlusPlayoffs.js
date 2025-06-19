@@ -1,6 +1,9 @@
 // ✅ standingsFullPlusPlayoffs.js – ranking na podstawie scorefullplusplayoffs
 const { SlashCommandBuilder } = require('discord.js');
 const pickemService = require('../services/pickemService');
+const path = require('path');
+const data = fs.readFileSync('data/users.json'); 
+const data = fs.readFileSync(path.join(__dirname, '../data/users.json'));
 
 module.exports = {
   data: new SlashCommandBuilder()
