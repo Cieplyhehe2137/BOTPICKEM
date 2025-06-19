@@ -34,3 +34,7 @@ app.get('/backup', (req, res) => {
 app.listen(PORT, () =>
     console.log('Admin Panel dostępny na porcie ${PORT}')
 );
+
+
+
+module.exports = {};
