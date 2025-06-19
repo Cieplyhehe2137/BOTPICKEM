@@ -1,6 +1,11 @@
 // index.js
 
 require('dotenv').config();
+
+if (!process.env.TOKEN) {
+    console.error("❌ Brak TOKEN w pliku .env");
+    process.exit(1);
+}
 const fs = require('fs');
 const path = require('path');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
